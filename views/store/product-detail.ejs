@@ -1,0 +1,66 @@
+<%- include('../partials/header') %>
+
+<section class="product-detail-page">
+    <div class="container">
+        <div class="breadcrumbs">
+            <a href="/">Home</a> / <a href="/products">Products</a> / <span><%= product.name %></span>
+        </div>
+        <div class="product-detail">
+            <div class="product-detail-image">
+                <img src="<%= product.image || 'https://placehold.co/500x600/FF6B6B/FFFFFF?text=' + encodeURIComponent(product.name) %>" alt="<%= product.name %>" />
+            </div>
+            <div class="product-detail-info">
+                <% if (product.badge) { %><span class="badge"><%= product.badge %></span><% } %>
+                <h1><%= product.name %></h1>
+                <p class="product-category"><%= product.category || 'General' %></p>
+                <div class="product-detail-price">
+                    <span class="current"><%= store.currency || 'Rs.' %> <%= Number(product.price).toLocaleString() %></span>
+                    <% if (product.originalPrice) { %><span class="original"><%= store.currency || 'Rs.' %> <%= Number(product.originalPrice).toLocaleString() %></span><% } %>
+                </div>
+                <p class="product-detail-desc"><%= product.description %></p>
+                <div class="product-meta">
+                    <p><strong>Stock:</strong> <%= product.stock > 0 ? 'In Stock (' + product.stock + ' available)' : 'Out of Stock' %></p>
+                </div>
+                <div class="product-detail-actions">
+                    <a href="https://wa.me/<%= store.whatsapp || '923001234567' %>?text=Hi%21%20I%20want%20to%20order%3A%20<%= encodeURIComponent(product.name) %>%20(Rs.%20<%= product.price %>)" target="_blank" class="btn btn-primary btn-block">
+                        <i class="fab fa-whatsapp"></i> Order via WhatsApp
+                    </a>
+                </div>
+                <div class="shipping-info">
+                    <p><i class="fas fa-truck"></i> <%= store.shipping_info || 'Free shipping on orders over Rs. 2,500' %></p>
+                    <p><i class="fas fa-undo-alt"></i> <%= store.return_policy || '7-day easy exchange policy' %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<% if (related && related.length) { %>
+<section class="related-products">
+    <div class="container">
+        <div class="section-header">
+            <h2>You May Also <span class="highlight">Like</span></h2>
+        </div>
+        <div class="product-grid">
+            <% related.filter(r => r.id !== product.id).slice(0, 4).forEach(p => { %>
+                <div class="product-card">
+                    <a href="/products/<%= p.id %>">
+                        <div class="product-image">
+                            <img src="<%= p.image || 'https://placehold.co/400x500/FF6B6B/FFFFFF?text=' + encodeURIComponent(p.name) %>" alt="<%= p.name %>" loading="lazy" />
+                            <% if (p.badge) { %><span class="product-badge"><%= p.badge %></span><% } %>
+                        </div>
+                        <div class="product-info">
+                            <h3><%= p.name %></h3>
+                            <div class="product-price">
+                                <%= store.currency || 'Rs.' %> <%= Number(p.price).toLocaleString() %>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</section>
+<% } %>
+
+<%- include('../partials/footer') %>

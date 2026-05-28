@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %><%= store.store_name || 'Nextfit' %></title>
+    <meta name="description" content="<%= store.description || 'Premium Kids Clothing' %>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/store.css" />
+    <style>
+        :root {
+            --primary: <%= store.primary_color || '#FF6B6B' %>;
+            --secondary: <%= store.secondary_color || '#4ECDC4' %>;
+        }
+    </style>
+</head>
+<body>
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="flash flash-error"><%= error %></div>
+    <% } %>
+    <% if (typeof message !== 'undefined' && message) { %>
+    <div class="flash flash-success"><%= message %></div>
+    <% } %>
+
+    <header>
+        <div class="container">
+            <a href="/" class="logo">
+                <% if (store.logo) { %>
+                    <img src="<%= store.logo %>" alt="<%= store.store_name %>" height="40" />
+                <% } else { %>
+                    <h1><%= store.store_name || 'NEXTFIT' %></h1>
+                <% } %>
+                <span><%= store.tagline || 'Kids Clothing' %></span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
+                    <li><a href="/products" class="<%= currentPath.startsWith('/products') ? 'active' : '' %>">Shop</a></li>
+                    <li><a href="/about" class="<%= currentPath === '/about' ? 'active' : '' %>">About</a></li>
+                    <li><a href="/contact" class="<%= currentPath === '/contact' ? 'active' : '' %>">Contact</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <button id="cart-btn" class="cart-btn" aria-label="Open cart">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span id="cart-count">0</span>
+                    </button>
+                    <button id="menu-toggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-overlay" class="cart-overlay"></div>
+    <div id="cart-sidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h3>Your Cart <span id="cart-count-sidebar">(0)</span></h3>
+            <button id="close-cart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cart-total">Rs. 0</span>
+            </div>
+            <button id="checkout-btn" class="btn btn-primary btn-block">
+                <i class="fab fa-whatsapp"></i> Order via WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="checkout-modal">
+        <div class="checkout-content">
+            <div class="checkout-header">
+                <h3>Complete Your Order</h3>
+                <button id="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="checkout-body">
+                <div class="checkout-form">
+                    <h4>Your Details</h4>
+                    <input type="text" id="cust-name" placeholder="Full Name *" required />
+                    <input type="tel" id="cust-phone" placeholder="Phone Number * (e.g., 03XX-XXXXXXX)" required />
+                    <input type="text" id="cust-city" placeholder="City" />
+                    <input type="text" id="cust-address" placeholder="Delivery Address" />
+                </div>
+                <div class="checkout-summary-panel">
+                    <h4>Order Summary</h4>
+                    <div id="checkout-summary"></div>
+                    <div class="checkout-total">
+                        <strong>Total:</strong>
+                        <strong id="checkout-total-display">Rs. 0</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="checkout-footer">
+                <button id="submit-order" class="btn btn-primary btn-block"
+                    data-whatsapp="<%= store.whatsapp || '923001234567' %>"
+                    data-store="<%= store.store_name || 'Nextfit' %>">
+                    <i class="fab fa-whatsapp"></i> Send Order via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>

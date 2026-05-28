@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Admin | <%= store.store_name || 'Nextfit' %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="flash flash-error"><%= error %></div>
+    <% } %>
+    <% if (typeof message !== 'undefined' && message) { %>
+    <div class="flash flash-success"><%= message %></div>
+    <% } %>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-brand">
+                <h2><%= store.store_name || 'NEXTFIT' %></h2>
+                <span>Admin Panel</span>
+            </div>
+            <nav class="admin-nav">
+                <a href="/admin/dashboard" class="<%= currentPath === '/admin/dashboard' ? 'active' : '' %>"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="/admin/products" class="<%= currentPath.startsWith('/admin/products') ? 'active' : '' %>"><i class="fas fa-tshirt"></i> Products</a>
+                <a href="/admin/categories" class="<%= currentPath.startsWith('/admin/categories') ? 'active' : '' %>"><i class="fas fa-tags"></i> Categories</a>
+                <a href="/admin/orders" class="<%= currentPath.startsWith('/admin/orders') ? 'active' : '' %>"><i class="fas fa-truck"></i> Orders</a>
+                <a href="/admin/settings" class="<%= currentPath.startsWith('/admin/settings') ? 'active' : '' %>"><i class="fas fa-cog"></i> Settings</a>
+                <a href="/admin/logout" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </aside>
+        <main class="admin-main">

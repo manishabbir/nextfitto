@@ -1,0 +1,62 @@
+<%- include('../partials/header') %>
+
+<section class="page-banner">
+    <div class="container">
+        <h1>Get In <span class="highlight">Touch</span></h1>
+        <p>We'd love to hear from you</p>
+    </div>
+</section>
+
+<section class="contact-page">
+    <div class="container">
+        <div class="contact-wrapper">
+            <div class="contact-info-cards">
+                <div class="info-card">
+                    <i class="fab fa-whatsapp"></i>
+                    <h4>WhatsApp</h4>
+                    <p><a href="https://wa.me/<%= store.whatsapp || '923001234567' %>" target="_blank">Chat with us</a></p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-phone-alt"></i>
+                    <h4>Phone</h4>
+                    <p><%= store.phone || '+92 300 1234567' %></p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Email</h4>
+                    <p><%= store.email || 'hello@nextfit.pk' %></p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h4>Location</h4>
+                    <p><%= store.address || 'Lahore, Pakistan' %></p>
+                </div>
+            </div>
+            <form class="contact-form" id="contact-form" action="https://wa.me/<%= store.whatsapp || '923001234567' %>" method="GET" target="_blank">
+                <h3>Send us a Message</h3>
+                <input type="text" name="text" placeholder="Your Name" id="contact-name" required />
+                <input type="tel" placeholder="Phone Number" id="contact-phone" required />
+                <input type="text" placeholder="City" id="contact-city" />
+                <textarea placeholder="Your Message / Order Details" rows="4" id="contact-message" required></textarea>
+                <button type="submit" class="btn btn-primary btn-block" onclick="return sendContactMessage()">
+                    <i class="fab fa-whatsapp"></i> Send via WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+function sendContactMessage() {
+    const name = document.getElementById('contact-name').value;
+    const phone = document.getElementById('contact-phone').value;
+    const city = document.getElementById('contact-city').value;
+    const message = document.getElementById('contact-message').value;
+    const whatsapp = '<%= store.whatsapp || "923001234567" %>';
+    const text = `Hi <%= store.store_name || "Nextfit" %>!%0A%0AName: ${encodeURIComponent(name)}%0APhone: ${encodeURIComponent(phone)}%0ACity: ${encodeURIComponent(city)}%0AMessage: ${encodeURIComponent(message)}`;
+    window.open(`https://wa.me/${whatsapp}?text=${text}`, '_blank');
+    return false;
+}
+</script>
+
+<%- include('../partials/footer') %>

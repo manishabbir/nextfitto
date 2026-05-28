@@ -1,0 +1,76 @@
+<%- include('../partials/header') %>
+
+<section class="page-banner">
+    <div class="container">
+        <h1>Our <span class="highlight">Collection</span></h1>
+        <p>Explore our range of kids clothing</p>
+    </div>
+</section>
+
+<section class="products-page">
+    <div class="container">
+        <div class="products-layout">
+            <aside class="sidebar">
+                <h3>Categories</h3>
+                <ul class="category-filter">
+                    <li><a href="/products" class="<%= !selectedCategory ? 'active' : '' %>">All</a></li>
+                    <% if (categories && categories.length) { %>
+                        <% categories.forEach(cat => { %>
+                            <li><a href="/products?category=<%= encodeURIComponent(cat.name) %>" class="<%= selectedCategory === cat.name ? 'active' : '' %>"><%= cat.name %></a></li>
+                        <% }); %>
+                    <% } %>
+                </ul>
+            </aside>
+            <div class="products-main">
+                <div class="products-toolbar">
+                    <p><%= products ? products.length : 0 %> product(s) found</p>
+                    <form action="/products" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search products..." value="<%= searchQuery %>" />
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="product-grid">
+                    <% if (products && products.length) { %>
+                        <% products.forEach(product => { %>
+                            <div class="product-card">
+                                <a href="/products/<%= product.id %>">
+                                    <div class="product-image">
+                                        <img src="<%= product.image || 'https://placehold.co/400x500/FF6B6B/FFFFFF?text=' + encodeURIComponent(product.name) %>" alt="<%= product.name %>" loading="lazy" />
+                                        <% if (product.badge) { %><span class="product-badge"><%= product.badge %></span><% } %>
+                                    </div>
+                                    <div class="product-info">
+                                        <p class="product-category"><%= product.category || 'General' %></p>
+                                        <h3><%= product.name %></h3>
+                                        <div class="product-footer">
+                                            <div class="product-price">
+                                                <%= store.currency || 'Rs.' %> <%= Number(product.price).toLocaleString() %>
+                                                <% if (product.originalPrice) { %><span class="original"><%= store.currency || 'Rs.' %> <%= Number(product.originalPrice).toLocaleString() %></span><% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                                <button class="add-to-cart-btn"
+                                    data-id="<%= product.id %>"
+                                    data-name="<%= product.name.replace(/"/g, '"') %>"
+                                    data-price="<%= product.price %>"
+                                    data-image="<%= product.image || '' %>"
+                                    aria-label="Add to cart">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <h3>No products found</h3>
+                            <p>Try a different category or search term.</p>
+                            <a href="/products" class="btn btn-primary">View All Products</a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

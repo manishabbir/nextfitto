@@ -1,0 +1,76 @@
+<%- include('../partials/admin-header') %>
+
+<div class="admin-page-header">
+    <h1>Dashboard</h1>
+    <p>Welcome back, Admin! Here's your store overview.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-tshirt"></i></div>
+        <div class="stat-info">
+            <h3><%= stats.products || 0 %></h3>
+            <p>Total Products</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #e8f5e9; color: #2e7d32;"><i class="fas fa-tags"></i></div>
+        <div class="stat-info">
+            <h3><%= stats.categories || 0 %></h3>
+            <p>Categories</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fff3e0; color: #e65100;"><i class="fas fa-truck"></i></div>
+        <div class="stat-info">
+            <h3><%= stats.orders || 0 %></h3>
+            <p>Total Orders</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #e3f2fd; color: #1565c0;"><i class="fas fa-money-bill-wave"></i></div>
+        <div class="stat-info">
+            <h3>Rs. <%= Number(stats.revenue || 0).toLocaleString() %></h3>
+            <p>Total Revenue</p>
+        </div>
+    </div>
+</div>
+
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2>Recent Orders</h2>
+        <a href="/admin/orders" class="btn btn-sm">View All</a>
+    </div>
+    <div class="admin-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (recentOrders && recentOrders.length) { %>
+                    <% recentOrders.forEach(order => { %>
+                    <tr>
+                        <td>#<%= order.id %></td>
+                        <td><%= order.customer_name %></td>
+                        <td><%= order.customer_phone %></td>
+                        <td>Rs. <%= Number(order.total || 0).toLocaleString() %></td>
+                        <td><span class="status status-<%= order.status %>"><%= order.status %></span></td>
+                        <td><%= new Date(order.created_at).toLocaleDateString() %></td>
+                    </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr><td colspan="6" class="empty">No orders yet</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('../partials/admin-footer') %>

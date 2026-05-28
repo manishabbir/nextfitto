@@ -1,0 +1,48 @@
+<footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h2><%= store.store_name || 'NEXTFIT' %></h2>
+                    <p><%= store.tagline || 'Premium Kids Clothing' %> — made in Pakistan with love.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/<%= store.whatsapp || '923001234567' %>" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/products">Shop</a></li>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="/contact">FAQs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact Us</h4>
+                    <p><i class="fas fa-phone"></i> <%= store.phone || '+92 300 1234567' %></p>
+                    <p><i class="fas fa-envelope"></i> <%= store.email || 'hello@nextfit.pk' %></p>
+                    <p><i class="fas fa-map-marker-alt"></i> <%= store.address || 'Lahore, Pakistan' %></p>
+                    <p><i class="fab fa-whatsapp"></i> <a href="https://wa.me/<%= store.whatsapp || '923001234567' %>">WhatsApp</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <%= new Date().getFullYear() %> <strong><%= store.store_name || 'Nextfit' %></strong> — All Rights Reserved. Designed & built in Pakistan.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/store.js"></script>
+</body>
+</html>

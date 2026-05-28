@@ -1,0 +1,32 @@
+<%- include('../partials/header') %>
+
+<section class="page-banner">
+    <div class="container">
+        <h1>About <span class="highlight">Us</span></h1>
+        <p>Our story and mission</p>
+    </div>
+</section>
+
+<section class="about-page">
+    <div class="container">
+        <div class="about-layout">
+            <div class="about-image">
+                <img src="https://placehold.co/500x600/4ECDC4/FFFFFF?text=<%= store.store_name || 'Nextfit' %>+Story" alt="About <%= store.store_name %>" />
+            </div>
+            <div class="about-text">
+                <h2>Welcome to <span class="highlight"><%= store.store_name || 'Nextfit' %></span></h2>
+                <p><%= store.about_text || 'At Nextfit, we believe every child deserves to look and feel their best. Based in Pakistan, we design kids clothing that blends style with comfort.' %></p>
+                <p>We carefully select the finest fabrics and employ skilled artisans to create outfits that are not only stylish but also durable enough to withstand the adventures of childhood.</p>
+                <ul class="about-features">
+                    <li><i class="fas fa-check-circle"></i> 100% soft cotton & breathable fabrics</li>
+                    <li><i class="fas fa-check-circle"></i> Trendy designs loved by kids & parents</li>
+                    <li><i class="fas fa-check-circle"></i> Durable stitching that lasts through washes</li>
+                    <li><i class="fas fa-check-circle"></i> Affordable prices with premium quality</li>
+                    <li><i class="fas fa-check-circle"></i> Designed & crafted with love in Pakistan</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

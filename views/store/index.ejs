@@ -1,0 +1,90 @@
+<%- include('../partials/header') %>
+
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <span class="badge">New Collection 2026</span>
+            <h1>Dress Your Little<br />Stars with <span class="highlight"><%= store.store_name || 'Nextfit' %></span></h1>
+            <p><%= store.description || 'Premium quality kids clothing crafted in Pakistan. Trendy designs, ultimate comfort, and lasting durability.' %></p>
+            <div class="hero-buttons">
+                <a href="/products" class="btn btn-primary">Shop Now <i class="fas fa-arrow-right"></i></a>
+                <a href="/about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-circle"></div>
+            <img src="https://placehold.co/500x500/<%= store.primary_color?.replace('#','') || 'FF6B6B' %>/FFFFFF?text=<%= store.store_name || 'Nextfit' %>+Kids" alt="<%= store.store_name %> Kids Clothing" />
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <div class="feature-item">
+            <i class="fas fa-truck"></i>
+            <h4>Free Shipping</h4>
+            <p>On orders over Rs. 2,500</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-shield-alt"></i>
+            <h4>100% Quality</h4>
+            <p>Premium fabric & stitching</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-undo-alt"></i>
+            <h4>Easy Returns</h4>
+            <p><%= store.return_policy || '7-day exchange policy' %></p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-headset"></i>
+            <h4>24/7 Support</h4>
+            <p>WhatsApp & Call support</p>
+        </div>
+    </div>
+</section>
+
+<section class="products" id="featured">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured <span class="highlight">Products</span></h2>
+            <p>Handpicked outfits for your little ones — available nationwide in Pakistan</p>
+        </div>
+        <div class="product-grid">
+            <% if (products && products.length) { %>
+                <% products.forEach(product => { %>
+                    <div class="product-card">
+                        <a href="/products/<%= product.id %>">
+                            <div class="product-image">
+                                <img src="<%= product.image || 'https://placehold.co/400x500/' + (store.primary_color?.replace('#','') || 'FF6B6B') + '/FFFFFF?text=' + encodeURIComponent(product.name) %>" alt="<%= product.name %>" loading="lazy" />
+                                <% if (product.badge) { %><span class="product-badge"><%= product.badge %></span><% } %>
+                            </div>
+                            <div class="product-info">
+                                <p class="product-category"><%= product.category || 'General' %></p>
+                                <h3><%= product.name %></h3>
+                                <p class="description"><%= product.description %></p>
+                                <div class="product-footer">
+                                    <div class="product-price">
+                                        <%= store.currency || 'Rs.' %> <%= Number(product.price).toLocaleString() %>
+                                        <% if (product.originalPrice) { %><span class="original"><%= store.currency || 'Rs.' %> <%= Number(product.originalPrice).toLocaleString() %></span><% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        <button class="add-to-cart-btn"
+                            data-id="<%= product.id %>"
+                            data-name="<%= product.name.replace(/"/g, '"') %>"
+                            data-price="<%= product.price %>"
+                            data-image="<%= product.image || '' %>"
+                            aria-label="Add to cart">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p class="no-products">No products available yet. Check back soon!</p>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>
