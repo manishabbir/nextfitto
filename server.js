@@ -3,26 +3,42 @@ const session = require('express-session');
 const flash = require('express-flash');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const db = require('./database-supabase');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Directories ──────────────────────────────
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+// ─── Try to create uploads dir (may fail on Vercel - that's ok) ──
+try {
+    const uploadsDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (e) {
+    console.log('Note: Uploads dir not writable (expected on Vercel)');
+}
 
-// ─── Multer ────────────────────────────────────
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadsDir),
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `product-${Date.now()}${ext}`);
+// ─── File upload handling (uses memory on Vercel, disk locally) ──
+let upload = null;
+try {
+    const multer = require('multer');
+    const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+    if (isVercel) {
+        // Use memory storage on Vercel (disk is read-only)
+        upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+    } else {
+        const uploadsDir = path.join(__dirname, 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+        upload = multer({ 
+            storage: multer.diskStorage({
+                destination: (req, file, cb) => cb(null, uploadsDir),
+                filename: (req, file, cb) => cb(null, `product-${Date.now()}${path.extname(file.originalname)}`)
+            }), 
+            limits: { fileSize: 5 * 1024 * 1024 } 
+        });
     }
-});
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+} catch (e) {
+    console.log('Multer not available:', e.message);
+}
 
 // ─── Middleware ────────────────────────────────
 app.use(express.json());
@@ -58,8 +74,12 @@ function asyncHandler(fn) {
 app.use(asyncHandler(async (req, res, next) => {
     if (!initialized) {
         initialized = true;
-        await db.initialize();
-        console.log('✅ Database initialized');
+        try {
+            await db.initialize();
+            console.log('✅ Database initialized');
+        } catch (e) {
+            console.error('Database init error:', e.message);
+        }
     }
     next();
 }));
@@ -161,17 +181,33 @@ app.get('/admin/products/add', isAuthenticated, asyncHandler(async (req, res) =>
     res.render('admin/product-form', { title: 'Add Product', product: null, categories });
 }));
 
-app.post('/admin/products/add', isAuthenticated, upload.single('image'), asyncHandler(async (req, res) => {
-    const { name, description, price, originalPrice, category, badge, stock } = req.body;
-    const image = req.file ? '/uploads/' + req.file.filename : null;
-    await db.addProduct({
-        name, description, price: parseFloat(price),
-        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-        category, badge, stock: parseInt(stock || 0), image
-    });
-    req.flash('message', 'Product added successfully!');
-    res.redirect('/admin/products');
-}));
+app.post('/admin/products/add', isAuthenticated, (req, res, next) => {
+    if (upload) {
+        upload.single('image')(req, res, asyncHandler(async (req, res) => {
+            const { name, description, price, originalPrice, category, badge, stock } = req.body;
+            const image = req.file ? '/uploads/' + req.file.filename : null;
+            await db.addProduct({
+                name, description, price: parseFloat(price),
+                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                category, badge, stock: parseInt(stock || 0), image
+            });
+            req.flash('message', 'Product added successfully!');
+            res.redirect('/admin/products');
+        }));
+    } else {
+        // No file upload support (Vercel) - just save without image
+        asyncHandler(async (req, res) => {
+            const { name, description, price, originalPrice, category, badge, stock } = req.body;
+            await db.addProduct({
+                name, description, price: parseFloat(price),
+                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                category, badge, stock: parseInt(stock || 0), image: null
+            });
+            req.flash('message', 'Product added without image (serverless mode)');
+            res.redirect('/admin/products');
+        })(req, res, next);
+    }
+});
 
 app.get('/admin/products/edit/:id', isAuthenticated, asyncHandler(async (req, res) => {
     const product = await db.getProduct(req.params.id);
@@ -180,18 +216,33 @@ app.get('/admin/products/edit/:id', isAuthenticated, asyncHandler(async (req, re
     res.render('admin/product-form', { title: 'Edit Product', product, categories });
 }));
 
-app.post('/admin/products/edit/:id', isAuthenticated, upload.single('image'), asyncHandler(async (req, res) => {
-    const { name, description, price, originalPrice, category, badge, stock } = req.body;
-    let image = req.body.existingImage || null;
-    if (req.file) image = '/uploads/' + req.file.filename;
-    await db.updateProduct(req.params.id, {
-        name, description, price: parseFloat(price),
-        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-        category, badge, stock: parseInt(stock || 0), image
-    });
-    req.flash('message', 'Product updated successfully!');
-    res.redirect('/admin/products');
-}));
+app.post('/admin/products/edit/:id', isAuthenticated, (req, res, next) => {
+    if (upload) {
+        upload.single('image')(req, res, asyncHandler(async (req, res) => {
+            const { name, description, price, originalPrice, category, badge, stock } = req.body;
+            let image = req.body.existingImage || null;
+            if (req.file) image = '/uploads/' + req.file.filename;
+            await db.updateProduct(req.params.id, {
+                name, description, price: parseFloat(price),
+                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                category, badge, stock: parseInt(stock || 0), image
+            });
+            req.flash('message', 'Product updated successfully!');
+            res.redirect('/admin/products');
+        }));
+    } else {
+        asyncHandler(async (req, res) => {
+            const { name, description, price, originalPrice, category, badge, stock } = req.body;
+            await db.updateProduct(req.params.id, {
+                name, description, price: parseFloat(price),
+                originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                category, badge, stock: parseInt(stock || 0), image: req.body.existingImage || null
+            });
+            req.flash('message', 'Product updated!');
+            res.redirect('/admin/products');
+        })(req, res, next);
+    }
+});
 
 app.post('/admin/products/delete/:id', isAuthenticated, asyncHandler(async (req, res) => {
     await db.deleteProduct(req.params.id);
@@ -232,14 +283,24 @@ app.get('/admin/settings', isAuthenticated, asyncHandler(async (req, res) => {
     res.render('admin/settings', { title: 'Store Settings', settings });
 }));
 
-app.post('/admin/settings', isAuthenticated, upload.single('logo'), asyncHandler(async (req, res) => {
-    const data = req.body;
-    if (req.file) data.logo = '/uploads/' + req.file.filename;
-    if (req.body.existingLogo && !data.logo) data.logo = req.body.existingLogo;
-    await db.updateStoreSettings(data);
-    req.flash('message', 'Settings updated successfully!');
-    res.redirect('/admin/settings');
-}));
+app.post('/admin/settings', isAuthenticated, (req, res, next) => {
+    if (upload) {
+        upload.single('logo')(req, res, asyncHandler(async (req, res) => {
+            const data = req.body;
+            if (req.file) data.logo = '/uploads/' + req.file.filename;
+            if (req.body.existingLogo && !data.logo) data.logo = req.body.existingLogo;
+            await db.updateStoreSettings(data);
+            req.flash('message', 'Settings updated successfully!');
+            res.redirect('/admin/settings');
+        }));
+    } else {
+        asyncHandler(async (req, res) => {
+            await db.updateStoreSettings(req.body);
+            req.flash('message', 'Settings updated!');
+            res.redirect('/admin/settings');
+        })(req, res, next);
+    }
+});
 
 app.post('/admin/change-password', isAuthenticated, asyncHandler(async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
@@ -275,22 +336,24 @@ app.use((err, req, res, next) => {
         req.flash('error', err.message);
         res.redirect('/admin/login');
     } else {
-        res.status(500).render('store/index', {
-            title: 'Home', products: [],
-            error: 'Something went wrong. Please try again.', message: null
-        });
+        res.status(500).send('Server error: ' + err.message);
     }
 });
 
 // ═══════════════════════════════════════════════
-//  START (for local) + EXPORT (for Vercel)
+//  START & EXPORT
 // ═══════════════════════════════════════════════
+// For Vercel: keep initialization async and export app
+// For local: listen on port
 
-// For local development
-if (require.main === module) {
+const isVercel = process.env.VERCEL === '1';
+
+if (!isVercel) {
     (async () => {
-        await db.initialize();
-        initialized = true;
+        try {
+            await db.initialize();
+            initialized = true;
+        } catch (e) { console.error('Init error:', e.message); }
         app.listen(PORT, () => {
             console.log(`
 ╔══════════════════════════════════════════╗
@@ -306,5 +369,4 @@ if (require.main === module) {
     })();
 }
 
-// Export for Vercel serverless
 module.exports = app;
