@@ -1,0 +1,21 @@
+{
+  "name": "nextfit-enterprise",
+  "version": "1.0.0",
+  "description": "Nextfit - Enterprise Kids Clothing Store with Admin Panel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "setup": "node setup.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "bcryptjs": "^2.4.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0",
+    "express-flash": "^0.0.2",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "validator": "^13.12.0"
+  }
+}
