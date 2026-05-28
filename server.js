@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-    secret: 'nextfit-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET || 'nextfit-secret-key-change-in-production',
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
@@ -39,6 +39,9 @@ app.use(flash());
 // ─── View Engine ──────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// ─── DB Initialization (lazy - runs on first request) ──
+let initialized = false;
 
 // ─── Auth Middleware ───────────────────────────
 function isAuthenticated(req, res, next) {
@@ -50,6 +53,16 @@ function isAuthenticated(req, res, next) {
 function asyncHandler(fn) {
     return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
+
+// ─── Initialize DB on first request ───────────
+app.use(asyncHandler(async (req, res, next) => {
+    if (!initialized) {
+        initialized = true;
+        await db.initialize();
+        console.log('✅ Database initialized');
+    }
+    next();
+}));
 
 // ─── Make store settings available everywhere ──
 app.use(asyncHandler(async (req, res, next) => {
@@ -245,7 +258,7 @@ app.post('/admin/change-password', isAuthenticated, asyncHandler(async (req, res
 }));
 
 // ═══════════════════════════════════════════════
-//  API: Place Order
+//  API
 // ═══════════════════════════════════════════════
 app.post('/api/orders', asyncHandler(async (req, res) => {
     const order = JSON.parse(req.body.orderData);
@@ -254,40 +267,32 @@ app.post('/api/orders', asyncHandler(async (req, res) => {
 }));
 
 // ═══════════════════════════════════════════════
-//  ERROR HANDLER (catches all async errors)
+//  ERROR HANDLER
 // ═══════════════════════════════════════════════
 app.use((err, req, res, next) => {
     console.error('❌ Server error:', err.message);
-    // Don't expose stack traces in production
     if (req.path.startsWith('/admin')) {
-        req.flash('error', 'An error occurred. Please check your Supabase connection.');
+        req.flash('error', err.message);
         res.redirect('/admin/login');
     } else {
         res.status(500).render('store/index', {
-            title: 'Home',
-            products: [],
-            error: 'Something went wrong. Please try again.',
-            message: null
+            title: 'Home', products: [],
+            error: 'Something went wrong. Please try again.', message: null
         });
     }
 });
 
 // ═══════════════════════════════════════════════
-//  INIT & START
+//  START (for local) + EXPORT (for Vercel)
 // ═══════════════════════════════════════════════
-//  INIT & START
-// ═══════════════════════════════════════════════
-async function start() {
-    try {
-        await db.initialize();
-        console.log('✅ Database connected (Supabase)');
-    } catch (e) {
-        console.error('⚠️ Database init warning:', e.message);
-        console.log('⚠️ Running with offline defaults...');
-    }
 
-    app.listen(PORT, () => {
-        console.log(`
+// For local development
+if (require.main === module) {
+    (async () => {
+        await db.initialize();
+        initialized = true;
+        app.listen(PORT, () => {
+            console.log(`
 ╔══════════════════════════════════════════╗
 ║        NEXTFIT - ENTERPRISE SYSTEM       ║
 ║══════════════════════════════════════════║
@@ -296,8 +301,10 @@ async function start() {
 ║  Default:  admin / admin123              ║
 ║  Database: Supabase PostgreSQL           ║
 ╚══════════════════════════════════════════╝
-        `);
-    });
+            `);
+        });
+    })();
 }
 
-start();
+// Export for Vercel serverless
+module.exports = app;
